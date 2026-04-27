@@ -14,9 +14,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Unauthorized - redirect to login
-      // Cookie has been cleared or expired
-      window.location.href = '/login';
+      // Only redirect if it's not a login request
+      if (error.config && !error.config.url.includes('/auth/login') && !window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

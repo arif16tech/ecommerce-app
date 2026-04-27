@@ -36,8 +36,29 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
-    minlength: 6
+    minlength: 6,
+    required: function() { return !this.googleId; }
+  },
+  googleId: {
+    type: String,
+    sparse: true,
+    unique: true
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  otp: {
+    type: String
+  },
+  otpExpires: {
+    type: Date
+  },
+  resetPasswordOtp: {
+    type: String
+  },
+  resetPasswordOtpExpires: {
+    type: Date
   },
   phone: {
     type: String,
@@ -65,8 +86,8 @@ const userSchema = new mongoose.Schema({
 
 // Hash password before saving
 userSchema.pre('save', async function() {
-  if (!this.isModified('password')) {
-    return ;
+  if (!this.isModified('password') || !this.password) {
+    return;
   }
   
   this.password = await bcrypt.hash(this.password, 10);

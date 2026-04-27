@@ -28,14 +28,8 @@ const Home = () => {
     dispatch(fetchProducts());
   }, [dispatch]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
+  const skeletonItems = Array.from({ length: 10 });
+  
   return (
     <motion.div 
       initial={{ opacity: 0 }} 
@@ -56,12 +50,29 @@ const Home = () => {
         <p className="text-gray-500 max-w-2xl mx-auto text-lg">Explore our curated collection of high-quality products designed for your modern lifestyle.</p>
       </div>
       
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="grid gap-2 sm:gap-6 lg:gap-8 grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-      >
+      {loading ? (
+        <div className="grid gap-2 sm:gap-6 lg:gap-8 grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {skeletonItems.map((_, index) => (
+            <div key={index} className="bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-sm animate-pulse">
+              <div className="aspect-4/5 bg-gray-200"></div>
+              <div className="p-2 sm:p-5 space-y-3">
+                <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                <div className="h-4 sm:h-5 bg-gray-300 rounded w-3/4"></div>
+                <div className="flex justify-between items-center pt-2">
+                  <div className="h-5 sm:h-6 bg-gray-300 rounded w-1/4"></div>
+                  <div className="h-4 sm:h-5 bg-gray-200 rounded w-1/4"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="grid gap-2 sm:gap-6 lg:gap-8 grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+        >
         {products.map(product => (
           <motion.div variants={itemVariants} key={product._id}>
             <Link
@@ -91,7 +102,8 @@ const Home = () => {
             </Link>
           </motion.div>
         ))}
-      </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 };

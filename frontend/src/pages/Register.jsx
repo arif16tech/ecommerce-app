@@ -6,9 +6,12 @@ import { toast } from 'sonner';
 
 const Register = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [otp, setOtp] = useState('');
+  const [step, setStep] = useState(1); // 1 = Registration, 2 = OTP Verification
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const [resending, setResending] = useState(false);
+  const { register, verifyEmail, resendOTP } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -23,14 +26,48 @@ const Register = () => {
     const result = await register(formData.name, formData.email, formData.password);
 
     if (result.success) {
-      toast.success('Registration successful!');
-      navigate('/');
+      toast.success(result.message || 'Registration successful! Check your email for OTP.');
+      setStep(2); // Move to OTP step
     } else {
       setError(result.message);
       toast.error(result.message || 'Registration failed');
     }
 
     setLoading(false);
+  };
+
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const result = await verifyEmail(formData.email, otp);
+
+    if (result.success) {
+      toast.success('Email verified successfully!');
+      navigate('/');
+    } else {
+      setError(result.message);
+      toast.error(result.message || 'Verification failed');
+    }
+
+    setLoading(false);
+  };
+
+  const handleResendOTP = async () => {
+    setResending(true);
+    setError('');
+    
+    const result = await resendOTP(formData.email);
+    
+    if (result.success) {
+      toast.success('A new OTP has been sent to your email.');
+    } else {
+      setError(result.message);
+      toast.error(result.message || 'Failed to resend OTP');
+    }
+    
+    setResending(false);
   };
 
   return (
@@ -58,7 +95,9 @@ const Register = () => {
           </motion.div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        {step === 1 ? (
+          <>
+            <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
             <input
@@ -114,6 +153,48 @@ const Register = () => {
             Log in
           </Link>
         </p>
+        </>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-5"
+          >
+            <p className="text-sm text-gray-600 mb-4 text-center">
+              We've sent a 6-digit verification code to <strong>{formData.email}</strong>
+            </p>
+            <form onSubmit={handleVerify} className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Verification Code</label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  required
+                  maxLength="6"
+                  className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-gray-900 text-center tracking-widest text-2xl font-mono"
+                  placeholder="------"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading || otp.length < 6}
+                className="w-full bg-linear-to-r from-purple-600 to-blue-600 text-white py-3.5 rounded-xl hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 font-bold shadow-md shadow-purple-500/20 transition-all active:scale-[0.98] mt-2"
+              >
+                {loading ? 'Verifying...' : 'Verify Email'}
+              </button>
+            </form>
+            <div className="text-center mt-6">
+              <button 
+                onClick={handleResendOTP}
+                disabled={resending}
+                className="text-sm text-purple-600 hover:text-purple-800 font-semibold disabled:opacity-50 transition-colors"
+              >
+                {resending ? 'Sending...' : "Didn't receive code? Resend OTP"}
+              </button>
+            </div>
+          </motion.div>
+        )}
       </motion.div>
     </div>
   );
