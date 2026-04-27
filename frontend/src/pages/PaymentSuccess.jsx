@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useDispatch } from 'react-redux'; // Redux import kiya
+import { clearCartState } from '../redux/slices/cartSlice'; // Sahi action import kiya
 import api from '../utils/api';
+import { toast } from 'sonner'; // Toast import kiya
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { clearCart } = useAuth();
+  const dispatch = useDispatch(); // Dispatch initialize kiya
+  
   const [verifying, setVerifying] = useState(true);
   const [success, setSuccess] = useState(false);
 
@@ -29,12 +32,12 @@ const PaymentSuccess = () => {
     try {
       const response = await api.post('/payment/verify-session', { sessionId });
       if (response.data.success) {
-        clearCart(); // Clear cart after successful payment verification
+        dispatch(clearCartState()); // Redux se cart clear kiya
         setSuccess(true);
       }
     } catch (error) {
       console.error('Payment verification failed:', error);
-      alert('Payment verification failed. Please contact support.');
+      toast.error('Payment verification failed. Please contact support.');
     } finally {
       setVerifying(false);
     }

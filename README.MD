@@ -1,78 +1,93 @@
-# StyleStore – MERN E-commerce
+# 🛍️ StyleStore – Modern Online Clothing Store
 
-StyleStore is a full-stack e-commerce application built with the **MERN stack**.  
-It includes secure authentication, cart management, Stripe payments, and an admin panel for managing products and orders.
-
----
-
-# Features
-
-### User
-- Secure authentication with **JWT + httpOnly cookies**
-- Browse and search products
-- Add products to cart with stock validation
-- Checkout with **Stripe payment gateway**
-- Persistent cart
-- Order history
-- Profile management
-
-### Admin
-- Product management
-- Size-wise stock control
-- Order management
-- Order status updates
+StyleStore is a premium, full-stack e-commerce application built using the **MERN Stack** (MongoDB, Express, React, Node.js). It features a highly responsive, modern UI/UX with smooth animations and robust state management.
 
 ---
 
-# Tech Stack
+## ✨ Key Features
 
-### Backend
-- Node.js
-- Express.js
-- MongoDB + Mongoose
-- JWT Authentication
-- bcryptjs
-- cookie-parser
-- Stripe
+### 👤 User Experience
+- **Secure Authentication**: Implementation using **JWT & httpOnly cookies** for maximum security.
+- **Modern UI/UX**: Overhauled design with a premium aesthetic, custom glassmorphism effects, and a responsive layout.
+- **Fluid Animations**: Staggered entry animations and smooth transitions powered by **Framer Motion**.
+- **State Management**: Scalable global state for products and cart using **Redux Toolkit**.
+- **Real-time Notifications**: Instant feedback with beautiful toast notifications via **Sonner**.
+- **Dynamic Cart**: Persistent cart management with stock validation.
+- **Stripe Integration**: Secure and seamless checkout process using the **Stripe Payment Gateway**.
+- **Order Tracking**: Detailed order history and status tracking.
+
+### 🛡️ Admin Dashboard
+- **Comprehensive Management**: Full control over products, categories, and inventory.
+- **Stock Control**: Size-specific stock management for accurate inventory tracking.
+- **Order Fulfilment**: View and update order statuses (Processing, Shipped, Delivered).
+- **Product Operations**: Add, edit, and delete products with ease.
+
+---
+
+## 🛠️ Tech Stack
 
 ### Frontend
-- React + Vite
-- React Router
-- Axios
-- Stripe JS
+- **Framework**: React + Vite
+- **State Management**: Redux Toolkit & React Redux
+- **Styling**: Tailwind CSS
+- **Animations**: Framer Motion
+- **Toasts**: Sonner
+- **Routing**: React Router
+- **HTTP Client**: Axios
+- **Payments**: Stripe Elements
+
+### Backend
+- **Environment**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB + Mongoose
+- **Security**: JWT, bcryptjs, cookie-parser
+- **Payments**: Stripe SDK
 
 ---
 
-# Installation
+## 🚀 Getting Started
 
-## 🔑 Environment Variables
+### 1️⃣ Prerequisites
+- Node.js installed
+- MongoDB (Local or Atlas)
+- Stripe Account (for API keys)
 
-Create a `.env` file inside the `backend` folder:
-
-```env
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/stylestore
-
-JWT_SECRET=your_secret_key
-
-STRIPE_SECRET_KEY=sk_test_xxx
-STRIPE_PUBLISHABLE_KEY=pk_test_xxx
-
-FRONTEND_URL=http://localhost:5173
-
-## ▶️ Run Locally
-
+### 2️⃣ Clone the Repository
+```bash
 git clone https://github.com/arif16tech/ecommerce-app.git
 cd ecommerce-app
+```
 
-### Backend
+### 3️⃣ Backend Setup
+Navigate to the `backend` directory and install dependencies:
 ```bash
 cd backend
 npm install
-npm run dev
-
-### Frontend
+```
+Create a `.env` file in the `backend` folder:
+```env
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+STRIPE_SECRET_KEY=sk_test_xxx
+FRONTEND_URL=http://localhost:5173
+```
+Start the backend server:
 ```bash
-cd frontend
-npm install
 npm run dev
+```
+
+### 4️⃣ Frontend Setup
+Navigate to the `frontend` directory and install dependencies:
+```bash
+cd ../frontend
+npm install
+```
+create .env file in frontend folder and add the following:
+```env
+VITE_API_URL=http://localhost:5000
+```
+Start the development server:
+```bash
+npm run dev
+```

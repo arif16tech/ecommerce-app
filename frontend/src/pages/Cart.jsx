@@ -1,145 +1,183 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import api from '../utils/api';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { updateCartItem, removeCartItem } from "../redux/slices/cartSlice";
+import { motion } from "framer-motion";
 
 const Cart = () => {
-  const { cart, cartTotal, fetchCart } = useAuth();
+  const { items: cart, total: cartTotal } = useSelector((state) => state.cart);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleUpdateQuantity = async (productId, size, newQuantity) => {
-    try {
-      const response = await api.put('/cart/update', {
-        productId,
-        size,
-        quantity: newQuantity
-      });
-
-      if (response.data.success) {
-        await fetchCart();
-      }
-    } catch (error) {
-      alert(error.response?.data?.message || 'Failed to update cart');
-    }
+  const handleUpdateQuantity = (productId, size, newQuantity) => {
+    dispatch(updateCartItem({ productId, size, quantity: newQuantity }));
   };
 
-  const handleRemoveItem = async (productId, size) => {
-    if (!window.confirm('Remove this item from cart?')) return;
-
-    try {
-      const response = await api.delete(`/cart/remove/${productId}/${size}`);
-
-      if (response.data.success) {
-        await fetchCart();
-      }
-    } catch (error) {
-      alert(error.response?.data?.message || 'Failed to remove item');
-    }
+  const handleRemoveItem = (productId, size) => {
+    dispatch(removeCartItem({ productId, size }));
   };
 
   const handleCheckout = () => {
     if (cart.length === 0) {
-      alert('Cart is empty');
+      alert("Cart is empty");
       return;
     }
-    navigate('/checkout');
+    navigate("/checkout");
   };
 
-  if (cart.length === 0) {
+  if (!cart || cart.length === 0) {
     return (
-      <div className="text-center py-20">
-        <h2 className="text-xl font-semibold">Your cart is empty</h2>
-        <button
-          onClick={() => navigate('/')}
-          className="mt-6 px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-700"
-        >
-          Continue Shopping
-        </button>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center py-20 min-h-[60vh] flex flex-col justify-center items-center px-4"
+      >
+        <div className="bg-white p-8 sm:p-10 rounded-3xl shadow-sm border border-gray-100 max-w-md w-full">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
+            Your cart is empty
+          </h2>
+          <p className="text-gray-500 mb-8 text-sm sm:text-base">
+            Looks like you haven't added anything to your cart yet.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="w-full bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30"
+          >
+            Start Shopping
+          </button>
+        </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-semibold text-gray-800 mb-6">Shopping Cart</h1>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="py-8 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+    >
+      <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-6 sm:mb-8">
+        Shopping Cart
+      </h1>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {cart.map((item) => (
-            <div
+            <motion.div
+              layout
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
               key={`${item.productId._id}-${item.size}`}
-              className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-lg shadow"
+              // Adjusted padding (p-4 on mobile) and forced flex-row
+              className="flex flex-row gap-3 sm:gap-6 bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100"
             >
               <img
                 src={item.productId.image}
                 alt={item.productId.name}
-                className="w-full sm:w-32 h-32 object-cover rounded"
+                // Shrunk mobile image size to a 5rem square (w-20 h-20)
+                className="w-20 h-20 sm:w-32 sm:h-32 object-cover rounded-lg sm:rounded-xl shrink-0"
               />
 
-              <div className="flex-1">
-                <h3 className="text-lg font-medium text-gray-800">
-                  {item.productId.name}
-                </h3>
-                <p className="text-sm text-gray-500">Size: {item.size}</p>
-                <p className="text-green-600 font-bold mt-1">
-                  ₹{item.productId.price}
-                </p>
+              <div className="flex-1 flex flex-col justify-between py-1">
+                <div>
+                  <h3 className="text-base sm:text-xl font-bold text-gray-900 mb-1 line-clamp-1">
+                    {item.productId.name}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">
+                    Size:{" "}
+                    <span className="font-semibold text-gray-700">
+                      {item.size}
+                    </span>
+                  </p>
+                  <p className="text-blue-600 font-bold sm:font-extrabold text-sm sm:text-lg">
+                    ₹{item.productId.price}
+                  </p>
+                </div>
               </div>
 
-              <div className="flex flex-col items-end space-y-4">
-                <div className="flex items-center space-x-2">
+              <div className="flex flex-col items-end justify-between py-1">
+                <button
+                  onClick={() =>
+                    handleRemoveItem(item.productId._id, item.size)
+                  }
+                  className="text-red-500 hover:text-red-600 text-xs sm:text-sm font-medium transition-colors"
+                >
+                  Remove
+                </button>
+
+                {/* Shrunk the quantity selector buttons for mobile */}
+                <div className="flex items-center space-x-1 sm:space-x-3 bg-gray-50 rounded-lg p-1 border border-gray-200 mt-2 sm:mt-0">
                   <button
-                    onClick={() => handleUpdateQuantity(item.productId._id, item.size, item.quantity - 1)}
+                    onClick={() =>
+                      handleUpdateQuantity(
+                        item.productId._id,
+                        item.size,
+                        item.quantity - 1,
+                      )
+                    }
                     disabled={item.quantity <= 1}
-                    className="px-2 py-1 border rounded disabled:opacity-50"
+                    className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-md bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 disabled:opacity-50 transition-colors text-sm"
                   >
                     -
                   </button>
-                  <span className="font-bold">{item.quantity}</span>
+                  <span className="font-bold w-5 sm:w-6 text-center text-xs sm:text-base text-gray-800">
+                    {item.quantity}
+                  </span>
                   <button
-                    onClick={() => handleUpdateQuantity(item.productId._id, item.size, item.quantity + 1)}
-                    className="px-2 py-1 border rounded"
+                    onClick={() =>
+                      handleUpdateQuantity(
+                        item.productId._id,
+                        item.size,
+                        item.quantity + 1,
+                      )
+                    }
+                    className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-md bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors text-sm"
                   >
                     +
                   </button>
                 </div>
 
-                <p className="font-bold">Subtotal: ₹{item.productId.price * item.quantity}</p>
-
-                <button
-                  onClick={() => handleRemoveItem(item.productId._id, item.size)}
-                  className="text-red-600 hover:underline"
-                >
-                  Remove
-                </button>
+                <p className="font-bold text-gray-900 text-sm sm:text-base mt-2">
+                  ₹{item.productId.price * item.quantity}
+                </p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow space-y-4">
-          <h2 className="text-xl font-semibold">Order Summary</h2>
-          <div className="flex justify-between">
-            <span>Items ({cart.length}):</span>
-            <span>₹{cartTotal}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Shipping:</span>
-            <span>FREE</span>
-          </div>
-          <div className="flex justify-between text-lg font-bold border-t pt-4">
-            <span>Total:</span>
-            <span>₹{cartTotal}</span>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white p-6 sm:p-8 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 h-fit sticky top-24 space-y-4 sm:space-y-6"
+        >
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 border-b border-gray-100 pb-4">
+            Order Summary
+          </h2>
+          <div className="space-y-3 sm:space-y-4 text-sm sm:text-base text-gray-600 font-medium">
+            <div className="flex justify-between">
+              <span>Items ({cart.length}):</span>
+              <span className="text-gray-900">₹{cartTotal}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Shipping:</span>
+              <span className="text-green-600 font-bold">FREE</span>
+            </div>
+            <div className="flex justify-between text-lg sm:text-xl font-extrabold text-gray-900 border-t border-gray-100 pt-4 sm:pt-6">
+              <span>Total:</span>
+              <span className="text-blue-600">₹{cartTotal}</span>
+            </div>
           </div>
           <button
             onClick={handleCheckout}
-            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-500 font-semibold"
+            className="w-full bg-linear-to-r from-blue-600 to-purple-600 text-white py-3 sm:py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 font-bold text-base sm:text-lg shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-1"
           >
             Proceed to Checkout
           </button>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

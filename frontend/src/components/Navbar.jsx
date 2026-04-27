@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSelector } from 'react-redux';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
-  const { user, cart, logout } = useAuth();
+  const { user, logout } = useAuth();
+  const cartItems = useSelector((state) => state.cart.items) || [];
   const navigate = useNavigate();
+  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -13,87 +17,173 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
-  const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
+  const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
+  const navLinks = [
+    { name: 'Home', path: '/' },
+    ...(user ? [
+      { name: 'Orders', path: '/orders' },
+      { name: 'Profile', path: '/profile' },
+      ...(user.isAdmin ? [{ name: 'Admin', path: '/admin' }] : []),
+    ] : []),
+  ];
 
   return (
-    <nav className="bg-gray-800 text-white shadow">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-        <Link to="/" className="text-xl font-bold">StyleStore</Link>
+    <motion.nav 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+      // Ensure the nav container is relative so the absolute menu positions against it
+      className="sticky top-0 z-50 bg-slate-900 border-b border-blue-900/50 shadow-lg shadow-blue-900/20"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20 bg-slate-900 z-50 relative">
+        <Link to="/" className="text-2xl font-extrabold tracking-tight">
+          <span className="bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-cyan-300">
+            StyleStore
+          </span>
+        </Link>
         
         {/* Desktop Menu */}
-        <div className="hidden md:flex space-x-6 items-center">
-          <Link to="/" className="hover:text-gray-300 transition">Home</Link>
+        <div className="hidden md:flex space-x-2 items-center font-medium">
+          {navLinks.map((link) => (
+            <Link key={link.name} to={link.path}>
+              <motion.div
+                whileHover={{ backgroundColor: "rgba(59, 130, 246, 0.1)" }}
+                whileTap={{ scale: 0.95 }}
+                className={`px-4 py-2 rounded-xl transition-colors duration-200 ${
+                  location.pathname === link.path ? 'text-blue-400 bg-blue-900/20' : 'text-slate-300 hover:text-blue-300'
+                }`}
+              >
+                {link.name}
+              </motion.div>
+            </Link>
+          ))}
+
           {user ? (
             <>
-              <Link to="/cart" className="relative hover:text-gray-300 transition">
-                Cart
-                {cartItemCount > 0 && (
-                  <span className="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
-                    {cartItemCount}
-                  </span>
-                )}
+              <Link to="/cart">
+                <motion.div
+                  whileHover={{ backgroundColor: "rgba(59, 130, 246, 0.1)" }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`relative px-4 py-2 rounded-xl transition-colors duration-200 flex items-center gap-1.5 ${
+                    location.pathname === '/cart' ? 'text-blue-400 bg-blue-900/20' : 'text-slate-300 hover:text-blue-300'
+                  }`}
+                >
+                  Cart
+                  {cartItemCount > 0 && (
+                    <motion.span 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-blue-600 rounded-full shadow-md shadow-blue-500/40"
+                    >
+                      {cartItemCount}
+                    </motion.span>
+                  )}
+                </motion.div>
               </Link>
-              <Link to="/orders" className="hover:text-gray-300 transition">Orders</Link>
-              <Link to="/profile" className="hover:text-gray-300 transition">Profile</Link>
-              {user.isAdmin && (
-                <Link to="/admin" className="text-yellow-400 font-semibold hover:text-yellow-300 transition">Admin</Link>
-              )}
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white transition"
+                className="ml-4 bg-slate-800 text-red-400 border border-red-500/20 hover:bg-red-500/10 hover:border-red-500/40 hover:text-red-300 px-5 py-2 rounded-xl transition-all text-sm font-semibold"
               >
                 Logout
-              </button>
+              </motion.button>
             </>
           ) : (
-            <>
-              <Link to="/login" className="hover:text-gray-300 transition">Login</Link>
-              <Link to="/register" className="hover:text-gray-300 transition">Register</Link>
-            </>
+            <div className="flex items-center space-x-3 ml-4">
+              <Link to="/login" className="text-slate-300 hover:text-blue-400 px-4 py-2 font-medium transition-colors">
+                Login
+              </Link>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link to="/register" className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-600/30 font-medium">
+                  Register
+                </Link>
+              </motion.div>
+            </div>
           )}
         </div>
 
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden flex flex-col space-y-1"
+          className="md:hidden flex flex-col space-y-1.5 p-2 rounded-lg hover:bg-slate-800 transition-colors z-50"
         >
-          <span className={`block w-6 h-0.5 bg-white transition-all ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-          <span className={`block w-6 h-0.5 bg-white transition-all ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-          <span className={`block w-6 h-0.5 bg-white transition-all ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+          <span className={`block w-6 h-0.5 bg-blue-400 transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+          <span className={`block w-6 h-0.5 bg-blue-400 transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
+          <span className={`block w-6 h-0.5 bg-blue-400 transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
         </button>
       </div>
 
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-gray-700 px-4 py-4 space-y-3">
-          <Link to="/" onClick={() => setIsMenuOpen(false)} className="block hover:text-gray-300 py-2">Home</Link>
-          {user ? (
-            <>
-              <Link to="/cart" onClick={() => setIsMenuOpen(false)} className="block hover:text-gray-300 py-2">
-                Cart {cartItemCount > 0 && <span className="text-red-400">({cartItemCount})</span>}
-              </Link>
-              <Link to="/orders" onClick={() => setIsMenuOpen(false)} className="block hover:text-gray-300 py-2">Orders</Link>
-              <Link to="/profile" onClick={() => setIsMenuOpen(false)} className="block hover:text-gray-300 py-2">Profile</Link>
-              {user.isAdmin && (
-                <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="block text-yellow-400 hover:text-yellow-300 py-2">Admin</Link>
+      {/* Mobile Menu Dropdown (Absolute Positioning) */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            // absolute, top-20 (height of navbar), left-0, w-full ensures it overlays content
+            className="absolute top-20 left-0 w-full md:hidden bg-slate-900 border-b border-blue-900/50 shadow-xl shadow-slate-900/50 z-40"
+          >
+            <div className="px-4 py-4 space-y-2 font-medium max-h-[calc(100vh-5rem)] overflow-y-auto">
+              {navLinks.map((link) => (
+                <Link 
+                  key={link.name} 
+                  to={link.path} 
+                  onClick={() => setIsMenuOpen(false)} 
+                  className={`block px-4 py-3 rounded-xl transition-colors ${
+                    location.pathname === link.path ? 'bg-blue-900/30 text-blue-400' : 'text-slate-300 hover:bg-slate-800 hover:text-blue-300'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              
+              {user ? (
+                <>
+                  <Link 
+                    to="/cart" 
+                    onClick={() => setIsMenuOpen(false)} 
+                    className={`flex px-4 py-3 rounded-xl transition-colors justify-between items-center ${
+                      location.pathname === '/cart' ? 'bg-blue-900/30 text-blue-400' : 'text-slate-300 hover:bg-slate-800 hover:text-blue-300'
+                    }`}
+                  >
+                    <span>Cart</span> 
+                    {cartItemCount > 0 && (
+                      <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">{cartItemCount}</span>
+                    )}
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-3 mt-2 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors font-semibold"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <div className="pt-2 flex flex-col space-y-3">
+                  <Link 
+                    to="/login" 
+                    onClick={() => setIsMenuOpen(false)} 
+                    className="block px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-blue-300 transition-colors text-center border border-slate-700"
+                  >
+                    Login
+                  </Link>
+                  <Link 
+                    to="/register" 
+                    onClick={() => setIsMenuOpen(false)} 
+                    className="block px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition-colors text-center shadow-lg shadow-blue-900/20"
+                  >
+                    Register
+                  </Link>
+                </div>
               )}
-              <button
-                onClick={handleLogout}
-                className="w-full text-left bg-red-600 hover:bg-red-700 px-3 py-2 rounded text-white transition"
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" onClick={() => setIsMenuOpen(false)} className="block hover:text-gray-300 py-2">Login</Link>
-              <Link to="/register" onClick={() => setIsMenuOpen(false)} className="block hover:text-gray-300 py-2">Register</Link>
-            </>
-          )}
-        </div>
-      )}
-    </nav>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   );
 };
 

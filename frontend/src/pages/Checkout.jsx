@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearCartState } from '../redux/slices/cartSlice'; 
 import api from '../utils/api';
+import { toast } from 'sonner'; // Imported toast
 
 const Checkout = () => {
-  const { user, cart, cartTotal, clearCart } = useAuth();
+  const { user } = useAuth();
+  const { items: cart, total: cartTotal } = useSelector((state) => state.cart);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [shippingAddress, setShippingAddress] = useState({
@@ -32,12 +38,12 @@ const Checkout = () => {
       });
 
       if (response.data.success) {
-        clearCart(); // Clear cart after successful order
-        alert('Order placed successfully!');
+        dispatch(clearCartState()); 
+        toast.success('Order placed successfully!'); // Replaced alert
         navigate('/orders');
       }
     } catch (error) {
-      alert(error.response?.data?.message || 'Order failed');
+      toast.error(error.response?.data?.message || 'Order failed'); // Replaced alert
     } finally {
       setLoading(false);
     }
@@ -54,7 +60,7 @@ const Checkout = () => {
         window.location.href = response.data.url;
       }
     } catch (error) {
-      alert(error.response?.data?.message || 'Payment initialization failed');
+      toast.error(error.response?.data?.message || 'Payment initialization failed'); // Replaced alert
       setLoading(false);
     }
   };
@@ -62,8 +68,8 @@ const Checkout = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (cart.length === 0) {
-      alert('Your cart is empty');
+    if (!cart || cart.length === 0) {
+      toast.warning('Your cart is empty'); // Replaced alert
       return;
     }
 
@@ -74,7 +80,7 @@ const Checkout = () => {
     }
   };
 
-  if (cart.length === 0) {
+  if (!cart || cart.length === 0) {
     return (
       <div className="text-center py-20">
         <h2 className="text-xl font-semibold">Your cart is empty</h2>
@@ -214,7 +220,7 @@ const Checkout = () => {
                     Size: {item.size} | Qty: {item.quantity}
                   </p>
                 </div>
-                <p className="font-bold">?{item.productId.price * item.quantity}</p>
+                <p className="font-bold">₹{item.productId.price * item.quantity}</p>
               </div>
             ))}
           </div>
@@ -222,7 +228,7 @@ const Checkout = () => {
           <div className="border-t pt-4 mt-4 space-y-2">
             <div className="flex justify-between">
               <span>Subtotal:</span>
-              <span>?{cartTotal}</span>
+              <span>₹{cartTotal}</span>
             </div>
             <div className="flex justify-between">
               <span>Shipping:</span>
@@ -230,7 +236,7 @@ const Checkout = () => {
             </div>
             <div className="flex justify-between text-lg font-bold border-t pt-2">
               <span>Total:</span>
-              <span>?{cartTotal}</span>
+              <span>₹{cartTotal}</span>
             </div>
           </div>
         </div>
