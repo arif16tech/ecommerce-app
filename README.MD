@@ -83,6 +83,7 @@ npm install
 Create a `.env` file in the `backend` folder:
 ```env
 PORT=5000
+NODE_ENV=development # Change to 'production' when deploying
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 STRIPE_SECRET_KEY=sk_test_xxx

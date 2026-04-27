@@ -16,7 +16,7 @@ const sendCookie = (res, token) => {
     httpOnly: true,
     maxAge: 30 * 24 * 60 * 60 * 1000,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   });
 };
 
@@ -219,7 +219,12 @@ const googleAuthCallback = async (req, res) => {
 
 // logout user
 const logout = async (req, res) => {
-  res.cookie('token', '', { httpOnly: true, maxAge: 0 });
+  res.cookie('token', '', { 
+    httpOnly: true, 
+    maxAge: 0,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  });
 
   res.json({
     success: true,
