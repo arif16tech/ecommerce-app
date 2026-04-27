@@ -16,6 +16,9 @@ const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 
+// Trust proxy is REQUIRED for Render to set secure cookies over HTTPS
+app.set('trust proxy', 1);
+
 connectDB();
 
 app.use(helmet());

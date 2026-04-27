@@ -10,7 +10,7 @@ StyleStore is a premium, feature-rich full-stack e-commerce application built ut
 - **Advanced Authentication**: 
   - Implementation using **JWT & httpOnly cookies** for maximum session security.
   - **OTP-based Email Verification** upon signup using Nodemailer to ensure valid user accounts.
-  - **Google OAuth 2.0** integration via Passport.js for seamless single sign-on (SSO).
+  - **Google OAuth 2.0** integration via Passport.js for seamless Registration and Login.
   - Secure **Forgot Password** flow via email OTPs.
   - Rate limiting applied to sensitive endpoints to prevent brute-force attacks.
 - **Modern UI/UX**: Overhauled design with a premium aesthetic, custom glassmorphism effects, and a highly responsive mobile-first layout.
@@ -92,6 +92,7 @@ CLIENT_URL=http://localhost:5173
 # Google OAuth Credentials
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=https://your-backend-domain.onrender.com/api/auth/google/callback
 
 # Email Credentials (Nodemailer)
 EMAIL_USER=your_email@gmail.com

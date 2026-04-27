@@ -7,7 +7,7 @@ import api from '../utils/api';
 import { toast } from 'sonner'; // Imported toast
 
 const Checkout = () => {
-  const { user } = useAuth();
+  const { user, checkAuthStatus } = useAuth();
   const { items: cart, total: cartTotal } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -39,7 +39,8 @@ const Checkout = () => {
 
       if (response.data.success) {
         dispatch(clearCartState()); 
-        toast.success('Order placed successfully!'); // Replaced alert
+        await checkAuthStatus(); // Fetch updated user profile with new shipping address
+        toast.success('Order placed successfully!'); 
         navigate('/orders');
       }
     } catch (error) {

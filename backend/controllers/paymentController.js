@@ -54,8 +54,8 @@ const createCheckoutSession = async (req, res) => {
       mode: 'payment',
       line_items: lineItems,
 
-      success_url: `${process.env.FRONTEND_URL}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/checkout`,
+      success_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/checkout`,
 
       customer_email: shippingAddress.email,
 
