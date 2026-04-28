@@ -3,21 +3,48 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
 
-const createToken = (user) => {
+const createAccessToken = (user) => {
   return jwt.sign(
     { userId: user._id, isAdmin: user.isAdmin },
     process.env.JWT_SECRET,
-    { expiresIn: '30d' }
+    { expiresIn: '15m' } // Short-lived Access Token
   );
 };
 
-const sendCookie = (res, token) => {
-  res.cookie('token', token, {
+const createRefreshToken = (user) => {
+  return jwt.sign(
+    { userId: user._id },
+    process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET, // Fallback for now
+    { expiresIn: '30d' } // Long-lived Refresh Token
+  );
+};
+
+const sendAuthCookies = (res, accessToken, refreshToken) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieOptions = {
     httpOnly: true,
-    maxAge: 30 * 24 * 60 * 60 * 1000,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+  };
+
+  res.cookie('accessToken', accessToken, {
+    ...cookieOptions,
+    maxAge: 15 * 60 * 1000 // 15 minutes
   });
+
+  res.cookie('refreshToken', refreshToken, {
+    ...cookieOptions,
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+  });
+};
+
+const storeRefreshToken = async (user, refreshTokenStr) => {
+  const hashedToken = crypto.createHash('sha256').update(refreshTokenStr).digest('hex');
+  user.refreshTokens.push({
+    token: hashedToken,
+    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
+  });
+  await user.save();
 };
 
 const generateOTP = () => {
@@ -104,10 +131,12 @@ const verifyEmail = async (req, res) => {
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpires = undefined;
-    await user.save();
 
-    const token = createToken(user);
-    sendCookie(res, token);
+    const accessToken = createAccessToken(user);
+    const refreshToken = createRefreshToken(user);
+    await storeRefreshToken(user, refreshToken);
+
+    sendAuthCookies(res, accessToken, refreshToken);
 
     res.status(200).json({
       success: true,
@@ -184,8 +213,11 @@ const login = async (req, res) => {
     if (!isMatch)
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
 
-    const token = createToken(user);
-    sendCookie(res, token);
+    const accessToken = createAccessToken(user);
+    const refreshToken = createRefreshToken(user);
+    await storeRefreshToken(user, refreshToken);
+
+    sendAuthCookies(res, accessToken, refreshToken);
 
     res.status(200).json({
       success: true,
@@ -208,8 +240,11 @@ const login = async (req, res) => {
 const googleAuthCallback = async (req, res) => {
   try {
     const user = req.user;
-    const token = createToken(user);
-    sendCookie(res, token);
+    const accessToken = createAccessToken(user);
+    const refreshToken = createRefreshToken(user);
+    await storeRefreshToken(user, refreshToken);
+    
+    sendAuthCookies(res, accessToken, refreshToken);
     res.redirect(process.env.CLIENT_URL || 'http://localhost:5173');
   } catch (error) {
     console.error('Google Auth Error:', error);
@@ -219,12 +254,30 @@ const googleAuthCallback = async (req, res) => {
 
 // logout user
 const logout = async (req, res) => {
-  res.cookie('token', '', { 
-    httpOnly: true, 
+  const refreshToken = req.cookies.refreshToken;
+  
+  if (refreshToken) {
+    try {
+      const hashedToken = crypto.createHash('sha256').update(refreshToken).digest('hex');
+      await User.updateOne(
+        { refreshTokens: { $elemMatch: { token: hashedToken } } },
+        { $pull: { refreshTokens: { token: hashedToken } } }
+      );
+    } catch (err) {
+      console.error('Logout Token Revocation Error:', err);
+    }
+  }
+
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieOptions = {
+    httpOnly: true,
     maxAge: 0,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-  });
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax'
+  };
+
+  res.cookie('accessToken', '', cookieOptions);
+  res.cookie('refreshToken', '', cookieOptions);
 
   res.json({
     success: true,
@@ -243,12 +296,12 @@ const getProfile = async (req, res) => {
 // check auth status
 const checkAuth = async (req, res) => {
   try {
-    const token = req.cookies.token;
+    const accessToken = req.cookies.accessToken;
 
-    if (!token)
-      return res.json({ success: true, authenticated: false });
+    if (!accessToken)
+      return res.status(401).json({ success: false, message: 'Access token missing' });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
 
     const user = await User.findById(decoded.userId).select('-password');
 
@@ -261,8 +314,61 @@ const checkAuth = async (req, res) => {
       user
     });
 
-  } catch {
-    res.json({ success: true, authenticated: false });
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ success: false, message: 'Token expired', expired: true });
+    }
+    res.status(401).json({ success: false, message: 'Invalid token' });
+  }
+};
+
+// Refresh Token
+const refreshTokenHandler = async (req, res) => {
+  try {
+    const oldRefreshToken = req.cookies.refreshToken;
+    if (!oldRefreshToken) return res.status(401).json({ success: false, message: 'No refresh token provided' });
+
+    // Find user with this token
+    const hashedToken = crypto.createHash('sha256').update(oldRefreshToken).digest('hex');
+    const user = await User.findOne({ 'refreshTokens.token': hashedToken });
+
+    if (!user) {
+      // Possible token reuse attack
+      return res.status(401).json({ success: false, message: 'Invalid refresh token' });
+    }
+
+    // Verify token signature
+    const secret = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET;
+    try {
+      jwt.verify(oldRefreshToken, secret);
+    } catch (err) {
+      // Token expired or invalid signature, remove it
+      user.refreshTokens = user.refreshTokens.filter(rt => rt.token !== hashedToken);
+      await user.save();
+      return res.status(401).json({ success: false, message: 'Refresh token expired' });
+    }
+
+    // Remove old token (Rotation)
+    user.refreshTokens = user.refreshTokens.filter(rt => rt.token !== hashedToken);
+
+    // Generate new tokens
+    const newAccessToken = createAccessToken(user);
+    const newRefreshToken = createRefreshToken(user);
+    
+    // Store new refresh token
+    const newHashedToken = crypto.createHash('sha256').update(newRefreshToken).digest('hex');
+    user.refreshTokens.push({
+      token: newHashedToken,
+      expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000
+    });
+
+    await user.save();
+    sendAuthCookies(res, newAccessToken, newRefreshToken);
+
+    res.json({ success: true, message: 'Tokens refreshed successfully' });
+  } catch (error) {
+    console.error('Refresh Token Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to refresh token' });
   }
 };
 
@@ -374,5 +480,6 @@ module.exports = {
   resendOTP,
   forgotPassword,
   resetPassword,
-  googleAuthCallback
+  googleAuthCallback,
+  refreshTokenHandler
 };

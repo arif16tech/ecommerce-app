@@ -1,5 +1,6 @@
 const Order = require('../models/Order');
 const User = require('../models/User');
+const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 
 // Create new order
@@ -16,16 +17,16 @@ const createOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Complete shipping address required' });
     }
 
-    const user = await User.findById(req.user._id).populate('cart.productId');
+    const userCart = await Cart.findOne({ user: req.user._id }).populate('items.productId');
 
-    if (!user.cart || user.cart.length === 0) {
+    if (!userCart || !userCart.items || userCart.items.length === 0) {
       return res.status(400).json({ success: false, message: 'Cart is empty' });
     }
 
     const orderItems = [];
     let totalAmount = 0;
 
-    for (const cartItem of user.cart) {
+    for (const cartItem of userCart.items) {
       const product = await Product.findById(cartItem.productId._id);
 
       if (!product) {
@@ -64,15 +65,17 @@ const createOrder = async (req, res) => {
       orderStatus: 'Pending'
     });
 
+    const user = await User.findById(req.user._id);
     if (!user.address || !user.phone) {
       user.name = shippingAddress.name || user.name;
       user.phone = shippingAddress.phone;
       user.address = shippingAddress.address;
       user.pincode = shippingAddress.pincode;
+      await user.save();
     }
 
-    user.cart = [];
-    await user.save();
+    userCart.items = [];
+    await userCart.save();
 
     res.status(201).json({ success: true, message: 'Order placed successfully', order });
   } catch (error) {

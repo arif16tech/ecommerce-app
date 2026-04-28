@@ -69,4 +69,8 @@ productSchema.methods.getTotalStock = function() {
   return this.sizes.reduce((total, size) => total + size.stock, 0);
 };
 
+// Indexes for faster queries and full-text search
+productSchema.index({ category: 1 });
+productSchema.index({ name: 'text', description: 'text' });
+
 module.exports = mongoose.model('Product', productSchema);

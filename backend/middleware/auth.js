@@ -4,7 +4,7 @@ const User = require('../models/User');
 // check if user is authenticated
 const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const token = req.cookies.accessToken;
 
     if (!token) {
       return res.status(401).json({

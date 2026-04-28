@@ -76,6 +76,7 @@ const Cart = () => {
               <img
                 src={item.productId.image}
                 alt={item.productId.name}
+                loading="lazy"
                 // Shrunk mobile image size to a 5rem square (w-20 h-20)
                 className="w-20 h-20 sm:w-32 sm:h-32 object-cover rounded-lg sm:rounded-xl shrink-0"
               />

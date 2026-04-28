@@ -10,6 +10,17 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/?search=${encodeURIComponent(searchQuery)}`);
+      setIsMenuOpen(false);
+    } else {
+      navigate('/');
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -59,6 +70,16 @@ const Navbar = () => {
             </Link>
           ))}
 
+          <form onSubmit={handleSearch} className="relative ml-2">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-slate-800 text-slate-200 text-sm px-4 py-2 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500 w-48 transition-all focus:w-64"
+            />
+          </form>
+
           {user ? (
             <>
               <Link to="/cart">
@@ -104,15 +125,41 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden flex flex-col space-y-1.5 p-2 rounded-lg hover:bg-slate-800 transition-colors z-50"
-        >
-          <span className={`block w-6 h-0.5 bg-blue-400 transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-          <span className={`block w-6 h-0.5 bg-blue-400 transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-          <span className={`block w-6 h-0.5 bg-blue-400 transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
-        </button>
+        {/* Mobile Elements (Search, Cart, Menu) */}
+        <div className="flex md:hidden items-center space-x-1 sm:space-x-3">
+          <form onSubmit={handleSearch} className="relative">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-slate-800 text-slate-200 text-sm px-3 py-1.5 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-blue-500 w-28 sm:w-36 transition-all"
+            />
+          </form>
+
+          {user && (
+            <Link to="/cart" className="relative text-slate-300 hover:text-blue-300 p-1.5">
+              <span className="sr-only">Cart</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              {cartItemCount > 0 && (
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold text-white bg-blue-600 rounded-full shadow-sm">
+                  {cartItemCount}
+                </span>
+              )}
+            </Link>
+          )}
+
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="flex flex-col space-y-1.5 p-2 rounded-lg hover:bg-slate-800 transition-colors z-50 ml-1"
+          >
+            <span className={`block w-6 h-0.5 bg-blue-400 transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+            <span className={`block w-6 h-0.5 bg-blue-400 transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
+            <span className={`block w-6 h-0.5 bg-blue-400 transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu Dropdown (Absolute Positioning) */}
@@ -139,21 +186,9 @@ const Navbar = () => {
                   {link.name}
                 </Link>
               ))}
-              
+
               {user ? (
                 <>
-                  <Link 
-                    to="/cart" 
-                    onClick={() => setIsMenuOpen(false)} 
-                    className={`flex px-4 py-3 rounded-xl transition-colors justify-between items-center ${
-                      location.pathname === '/cart' ? 'bg-blue-900/30 text-blue-400' : 'text-slate-300 hover:bg-slate-800 hover:text-blue-300'
-                    }`}
-                  >
-                    <span>Cart</span> 
-                    {cartItemCount > 0 && (
-                      <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">{cartItemCount}</span>
-                    )}
-                  </Link>
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-3 mt-2 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors font-semibold"

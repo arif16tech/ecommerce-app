@@ -12,18 +12,42 @@ const getAllProducts = async (req, res) => {
     if (category) filter.category = category;
     if (subcategory) filter.subcategory = subcategory;
 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalCount = await Product.countDocuments(filter);
+
     if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-      ];
+      filter.$text = { $search: search };
+      
+      // If searching, sort by text score relevance
+      const products = await Product.find(filter)
+        .sort({ score: { $meta: 'textScore' } })
+        .skip(skip)
+        .limit(limit);
+        
+      return res.json({
+        success: true,
+        count: products.length,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: page,
+        products
+      });
     }
 
-    const products = await Product.find(filter).sort({ createdAt: -1 });
+    const products = await Product.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.json({
       success: true,
       count: products.length,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      currentPage: page,
       products
     });
 

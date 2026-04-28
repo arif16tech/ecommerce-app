@@ -21,6 +21,14 @@ StyleStore is a premium, feature-rich full-stack e-commerce application built ut
 - **Stripe Integration**: Secure and seamless checkout process using the **Stripe Payment Gateway**.
 - **Order Tracking**: Detailed user order history and status tracking.
 
+### ⚡ Performance & Reliability
+- **Full-Text Product Search**: Advanced searching using MongoDB `$text` indexes for rapid queries.
+- **Infinite Scroll Pagination**: Seamlessly load products as users scroll down, drastically reducing backend load and improving the UI experience.
+- **Optimized Database**: MongoDB indexing and a dedicated Cart model structure to prevent document bloat.
+- **Robust Validation**: Zod schemas used to strictly validate all incoming API requests (login/registration).
+- **Global Error Handling**: Express v5-compatible global middleware to catch and securely format all backend errors.
+- **Lazy Loading**: Deferred loading of high-resolution product images to ensure instantaneous initial page loads.
+
 ### 🛡️ Admin Dashboard
 - **Comprehensive Management**: Full control over products, categories, and inventory.
 - **Stock Control**: Size-specific stock management for accurate inventory tracking.
@@ -86,6 +94,7 @@ PORT=5000
 NODE_ENV=development # Change to 'production' when deploying
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
+REFRESH_TOKEN_SECRET=your_refresh_token_secret
 STRIPE_SECRET_KEY=sk_test_xxx
 CLIENT_URL=http://localhost:5173
 
@@ -117,11 +126,3 @@ Start the development server:
 ```bash
 npm run dev
 ```
-
----
-
-## 🤝 Contributing
-Contributions, issues, and feature requests are welcome! Feel free to check the issues page if you want to contribute.
-
-## 📝 License
-This project is licensed under the MIT License.

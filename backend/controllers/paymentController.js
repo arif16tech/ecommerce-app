@@ -2,6 +2,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 const User = require('../models/User');
 const Order = require('../models/Order');
+const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 
 
@@ -27,9 +28,9 @@ const createCheckoutSession = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.user._id).populate('cart.productId');
+    const userCart = await Cart.findOne({ user: req.user._id }).populate('items.productId');
 
-    if (!user.cart.length) {
+    if (!userCart || !userCart.items || !userCart.items.length) {
       return res.status(400).json({
         success: false,
         message: 'Cart is empty'
@@ -37,7 +38,7 @@ const createCheckoutSession = async (req, res) => {
     }
 
     // Prepare stripe line items
-    const lineItems = user.cart.map(item => ({
+    const lineItems = userCart.items.map(item => ({
       price_data: {
         currency: 'inr',
         product_data: {
@@ -115,16 +116,16 @@ const verifySession = async (req, res) => {
       shippingPincode
     } = session.metadata;
 
-    const user = await User.findById(userId).populate('cart.productId');
+    const userCart = await Cart.findOne({ user: userId }).populate('items.productId');
 
-    if (!user || !user.cart.length)
+    if (!userCart || !userCart.items || !userCart.items.length)
       return res.status(400).json({ success: false, message: 'Cart empty' });
 
     const orderItems = [];
     let totalAmount = 0;
 
     // Validate stock and prepare order items
-    for (const item of user.cart) {
+    for (const item of userCart.items) {
 
       const product = await Product.findById(item.productId._id);
 
@@ -176,16 +177,18 @@ const verifySession = async (req, res) => {
     });
 
     // Save shipping to user profile
+    const user = await User.findById(userId);
     if (!user.address || !user.phone) {
       user.name = shippingName || user.name;
       user.phone = shippingPhone;
       user.address = shippingAddress;
       user.pincode = shippingPincode;
+      await user.save();
     }
 
     // Clear cart
-    user.cart = [];
-    await user.save();
+    userCart.items = [];
+    await userCart.save();
 
     res.status(201).json({
       success: true,

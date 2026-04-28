@@ -1,25 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const cartItemSchema = new mongoose.Schema({
-  productId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: true
-  },
-  size: {
-    type: String,
-    required: true,
-    enum: ['S', 'M', 'L', 'XL']
-  },
-  quantity: {
-    type: Number,
-    required: true,
-    min: 1,
-    default: 1
-  }
-}, { _id: false });
-
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -79,7 +60,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  cart: [cartItemSchema]
+  refreshTokens: [{
+    token: { type: String, required: true }, // Hashed token
+    expiresAt: { type: Date, required: true }
+  }]
 }, { 
   timestamps: true 
 });

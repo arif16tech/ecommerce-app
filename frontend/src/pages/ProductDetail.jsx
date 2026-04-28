@@ -97,6 +97,7 @@ const ProductDetail = () => {
             transition={{ delay: 0.2 }}
             src={product.image}
             alt={product.name}
+            loading="lazy"
             className="w-full max-w-sm h-auto rounded-2xl shadow-lg object-cover aspect-4/5"
           />
         </div>
