@@ -62,8 +62,11 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         
-        // If refresh fails, forcefully logout by redirecting to login
-        if (!window.location.pathname.includes('/login')) {
+        // If refresh fails, only redirect to login if on a protected route
+        const publicPaths = ['/', '/login', '/register'];
+        const currentPath = window.location.pathname;
+        const isPublicRoute = publicPaths.includes(currentPath) || currentPath.startsWith('/product/');
+        if (!isPublicRoute) {
           window.location.href = '/login';
         }
         return Promise.reject(refreshError);

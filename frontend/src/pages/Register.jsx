@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 const Register = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [otp, setOtp] = useState('');
-  const [step, setStep] = useState(1); // 1 = Registration, 2 = OTP Verification
+  const [step, setStep] = useState(1); 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -27,7 +27,7 @@ const Register = () => {
 
     if (result.success) {
       toast.success(result.message || 'Registration successful! Check your email for OTP.');
-      setStep(2); // Move to OTP step
+      setStep(2); 
     } else {
       setError(result.message);
       toast.error(result.message || 'Registration failed');
@@ -80,18 +80,18 @@ const Register = () => {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white p-8 sm:p-10 rounded-3xl shadow-xl shadow-blue-900/5 border border-gray-100 w-full max-w-md relative overflow-hidden"
+        className="bg-slate-900/50 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-800 w-full max-w-[400px] relative overflow-hidden"
       >
-        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-purple-500 to-blue-600"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-white"></div>
         
-        <h2 className="text-3xl font-extrabold text-center text-gray-900 mb-2">Create Account</h2>
-        <p className="text-center text-gray-500 mb-8 font-medium">Join StyleStore today</p>
+        <h2 className="text-3xl font-extrabold text-center text-white mb-2">Create Account</h2>
+        <p className="text-center text-slate-400 mb-8 font-medium">Join StyleStore today</p>
 
         {error && (
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm font-medium border border-red-100 flex items-center gap-2"
+            className="bg-red-500/10 text-red-400 p-4 rounded-xl mb-6 text-sm font-medium border border-red-500/20 flex items-center gap-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -104,33 +104,33 @@ const Register = () => {
           <>
             <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
+            <label className="block text-sm font-semibold text-slate-300 mb-1.5">Full Name</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
               required
-              className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-gray-900"
+              className="block w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors text-white placeholder-slate-500"
               placeholder="John Doe"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
+            <label className="block text-sm font-semibold text-slate-300 mb-1.5">Email Address</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
-              className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-gray-900"
+              className="block w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors text-white placeholder-slate-500"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
+            <label className="block text-sm font-semibold text-slate-300 mb-1.5">Password</label>
             <input
               type="password"
               name="password"
@@ -138,7 +138,7 @@ const Register = () => {
               onChange={handleChange}
               required
               minLength="6"
-              className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-gray-900"
+              className="block w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors text-white placeholder-slate-500"
               placeholder="At least 6 characters"
             />
           </div>
@@ -146,7 +146,7 @@ const Register = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-linear-to-r from-purple-600 to-blue-600 text-white py-3.5 rounded-xl hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 font-bold shadow-md shadow-purple-500/20 transition-all active:scale-[0.98] mt-2"
+            className="w-full bg-white text-slate-900 py-3.5 rounded-xl hover:bg-slate-200 disabled:opacity-50 font-bold shadow-lg transition-all active:scale-[0.98] mt-2"
           >
             {loading ? 'Creating Account...' : 'Register'}
           </button>
@@ -155,17 +155,17 @@ const Register = () => {
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+              <div className="w-full border-t border-slate-800"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-slate-900 text-slate-500">Or continue with</span>
             </div>
           </div>
 
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="mt-6 w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+            className="mt-6 w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-700 rounded-xl shadow-sm bg-slate-800 text-sm font-semibold text-white hover:bg-slate-700 transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -177,9 +177,9 @@ const Register = () => {
           </button>
         </div>
 
-        <p className="text-center text-sm text-gray-600 mt-8 font-medium">
+        <p className="text-center text-sm text-slate-400 mt-8 font-medium">
           Already have an account?{' '}
-          <Link to="/login" className="text-purple-600 hover:text-purple-700 hover:underline transition-all font-bold">
+          <Link to="/login" className="text-white hover:underline transition-all font-bold">
             Log in
           </Link>
         </p>
@@ -190,26 +190,26 @@ const Register = () => {
             animate={{ opacity: 1, x: 0 }}
             className="space-y-5"
           >
-            <p className="text-sm text-gray-600 mb-4 text-center">
-              We've sent a 6-digit verification code to <strong>{formData.email}</strong>
+            <p className="text-sm text-slate-400 mb-4 text-center">
+              We've sent a 6-digit verification code to <strong className="text-white">{formData.email}</strong>
             </p>
             <form onSubmit={handleVerify} className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Verification Code</label>
+                <label className="block text-sm font-semibold text-slate-300 mb-1.5">Verification Code</label>
                 <input
                   type="text"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   required
                   maxLength="6"
-                  className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors text-gray-900 text-center tracking-widest text-2xl font-mono"
+                  className="block w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors text-white placeholder-slate-500 text-center tracking-widest text-2xl font-mono"
                   placeholder="------"
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading || otp.length < 6}
-                className="w-full bg-linear-to-r from-purple-600 to-blue-600 text-white py-3.5 rounded-xl hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 font-bold shadow-md shadow-purple-500/20 transition-all active:scale-[0.98] mt-2"
+                className="w-full bg-white text-slate-900 py-3.5 rounded-xl hover:bg-slate-200 disabled:opacity-50 font-bold shadow-lg transition-all active:scale-[0.98] mt-2"
               >
                 {loading ? 'Verifying...' : 'Verify Email'}
               </button>
@@ -218,7 +218,7 @@ const Register = () => {
               <button 
                 onClick={handleResendOTP}
                 disabled={resending}
-                className="text-sm text-purple-600 hover:text-purple-800 font-semibold disabled:opacity-50 transition-colors"
+                className="text-sm text-slate-300 hover:text-white font-semibold disabled:opacity-50 transition-colors underline underline-offset-4"
               >
                 {resending ? 'Sending...' : "Didn't receive code? Resend OTP"}
               </button>

@@ -89,7 +89,7 @@ const ProductDetail = () => {
       exit={{ opacity: 0 }}
       className="py-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8"
     >
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="bg-slate-900/50 p-6 rounded-3xl shadow-lg border border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="flex justify-center items-center">
           <motion.img
             initial={{ opacity: 0, scale: 0.95 }}
@@ -98,26 +98,26 @@ const ProductDetail = () => {
             src={product.image}
             alt={product.name}
             loading="lazy"
-            className="w-full max-w-sm h-auto rounded-2xl shadow-lg object-cover aspect-4/5"
+            className="w-full max-w-sm h-auto rounded-2xl shadow-2xl object-cover aspect-4/5 bg-slate-800"
           />
         </div>
 
         <div className="flex flex-col justify-center gap-5">
           <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 mb-1">
+            <h1 className="text-3xl font-extrabold text-white mb-1">
               {product.name}
             </h1>
-            <p className="text-gray-500 font-medium text-sm">
-              <span className="text-blue-600">{product.category}</span> /{" "}
+            <p className="text-slate-400 font-medium text-sm tracking-wide">
+              <span className="text-slate-300">{product.category}</span> /{" "}
               {product.subcategory}
             </p>
           </div>
 
-          <p className="text-2xl font-extrabold text-gray-900">
+          <p className="text-2xl font-extrabold text-white">
             ₹{product.price}
           </p>
 
-          <div className="text-gray-600 text-sm leading-relaxed">
+          <div className="text-slate-400 text-sm leading-relaxed">
             <p>
               {isExpanded
                 ? product.description
@@ -128,7 +128,7 @@ const ProductDetail = () => {
             {product.description?.length > 120 && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-blue-600 hover:text-blue-700 font-semibold mt-1 transition-colors"
+                className="text-white hover:text-slate-300 font-semibold mt-1 transition-colors underline underline-offset-4"
               >
                 {isExpanded ? "Show Less" : "Read More"}
               </button>
@@ -136,7 +136,7 @@ const ProductDetail = () => {
           </div>
 
           <div className="space-y-3 mt-4">
-            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
               Select Size
             </h3>
             <div className="flex flex-wrap gap-3">
@@ -147,8 +147,8 @@ const ProductDetail = () => {
                   disabled={sizeObj.stock === 0}
                   className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                     selectedSize === sizeObj.size
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/30 ring-2 ring-blue-600 ring-offset-2"
-                      : "bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 hover:border-gray-300"
+                      ? "bg-white text-slate-900 shadow-md ring-2 ring-white ring-offset-2 ring-offset-slate-900"
+                      : "bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 hover:text-white"
                   } ${sizeObj.stock === 0 ? "opacity-50 cursor-not-allowed line-through" : ""}`}
                 >
                   {sizeObj.size}
@@ -156,12 +156,12 @@ const ProductDetail = () => {
               ))}
             </div>
             {selectedSize && (
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-slate-400 mt-2">
                 <span
                   className={
                     selectedSizeStock > 0
-                      ? "text-green-600 font-medium"
-                      : "text-red-500"
+                      ? "text-emerald-400 font-medium"
+                      : "text-red-400"
                   }
                 >
                   {selectedSizeStock > 0
@@ -173,17 +173,17 @@ const ProductDetail = () => {
           </div>
 
           <div className="space-y-3 mt-2">
-            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
               Quantity
             </h3>
-            <div className="flex items-center gap-4 bg-gray-50 w-fit p-1 rounded-xl border border-gray-200">
+            <div className="flex items-center gap-4 bg-slate-800 w-fit p-1 rounded-xl border border-slate-700">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors shadow-sm"
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-700 border border-slate-600 text-white hover:bg-slate-600 transition-colors shadow-sm"
               >
                 -
               </button>
-              <span className="text-lg font-bold w-8 text-center text-gray-900">
+              <span className="text-lg font-bold w-8 text-center text-white">
                 {quantity}
               </span>
               <button
@@ -191,7 +191,7 @@ const ProductDetail = () => {
                   setQuantity(Math.min(selectedSizeStock, quantity + 1))
                 }
                 disabled={quantity >= selectedSizeStock}
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-100 disabled:opacity-50 transition-colors shadow-sm"
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-700 border border-slate-600 text-white hover:bg-slate-600 disabled:opacity-50 disabled:hover:bg-slate-700 transition-colors shadow-sm"
               >
                 +
               </button>
@@ -201,7 +201,7 @@ const ProductDetail = () => {
           <button
             onClick={handleAddToCart}
             disabled={adding || !selectedSize || selectedSizeStock === 0}
-            className="mt-4 w-full bg-gray-900 text-white py-3.5 rounded-xl hover:bg-gray-800 disabled:opacity-50 disabled:bg-gray-400 font-bold shadow-lg transition-all transform hover:-translate-y-1 active:translate-y-0"
+            className="mt-4 w-full bg-white text-slate-900 py-3.5 rounded-xl hover:bg-slate-200 disabled:opacity-50 disabled:bg-slate-600 disabled:text-slate-400 font-bold shadow-lg transition-all transform hover:-translate-y-1 active:translate-y-0"
           >
             {adding ? "Adding..." : "Add to Cart"}
           </button>

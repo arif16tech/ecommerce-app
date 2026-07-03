@@ -1,14 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useDispatch } from 'react-redux'; // Redux import kiya
-import { clearCartState } from '../redux/slices/cartSlice'; // Sahi action import kiya
+import { useDispatch } from 'react-redux';
+import { clearCartState } from '../redux/slices/cartSlice'; 
 import api from '../utils/api';
-import { toast } from 'sonner'; // Toast import kiya
+import { toast } from 'sonner';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch(); // Dispatch initialize kiya
+  const dispatch = useDispatch(); 
   
   const [verifying, setVerifying] = useState(true);
   const [success, setSuccess] = useState(false);
@@ -32,7 +32,7 @@ const PaymentSuccess = () => {
     try {
       const response = await api.post('/payment/verify-session', { sessionId });
       if (response.data.success) {
-        dispatch(clearCartState()); // Redux se cart clear kiya
+        dispatch(clearCartState()); 
         setSuccess(true);
       }
     } catch (error) {
@@ -46,37 +46,37 @@ const PaymentSuccess = () => {
   if (verifying) {
     return (
       <div className="min-h-screen flex justify-center items-center p-6">
-        <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
-          <h2 className="text-xl font-medium">Verifying payment...</h2>
-          <p>Please wait while we confirm your payment.</p>
+        <div className="bg-slate-900/50 p-10 rounded-3xl shadow-lg border border-slate-800 text-center max-w-md">
+          <h2 className="text-xl font-bold text-white mb-2">Verifying payment...</h2>
+          <p className="text-slate-400">Please wait while we confirm your payment.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex justify-center items-center p-6">
-      <div className="bg-white p-8 rounded-lg shadow-md text-center max-w-md">
+    <div className="min-h-[80vh] flex justify-center items-center p-6">
+      <div className="bg-slate-900/50 p-10 rounded-3xl shadow-lg border border-slate-800 text-center max-w-md w-full">
         {success ? (
           <>
-            <div className="text-5xl text-green-600 mb-4">✓</div>
-            <h1 className="text-2xl font-semibold text-green-600 mb-2">Payment Successful!</h1>
-            <p className="text-lg text-gray-800 mb-1">
+            <div className="text-6xl text-emerald-400 mb-6 drop-shadow-sm">✓</div>
+            <h1 className="text-2xl font-extrabold text-white mb-2">Payment Successful!</h1>
+            <p className="text-lg text-slate-300 mb-2">
               Your order has been placed successfully.
             </p>
-            <p className="text-gray-500 mb-6">
+            <p className="text-slate-400 mb-8">
               You will receive an email confirmation shortly.
             </p>
             <div className="flex gap-4 justify-center flex-wrap">
               <button
                 onClick={() => navigate('/orders')}
-                className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+                className="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors shadow-lg"
               >
                 View Orders
               </button>
               <button
                 onClick={() => navigate('/')}
-                className="px-6 py-2 border border-gray-800 text-gray-800 rounded-md hover:bg-gray-100"
+                className="px-6 py-3 bg-slate-800 border border-slate-700 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors shadow-sm"
               >
                 Continue Shopping
               </button>
@@ -84,14 +84,14 @@ const PaymentSuccess = () => {
           </>
         ) : (
           <>
-            <div className="text-5xl text-red-600 mb-4">✗</div>
-            <h1 className="text-2xl font-semibold text-red-600 mb-2">Payment Failed</h1>
-            <p className="text-lg text-gray-800 mb-4">
+            <div className="text-6xl text-red-500 mb-6 drop-shadow-sm">✗</div>
+            <h1 className="text-2xl font-extrabold text-white mb-2">Payment Failed</h1>
+            <p className="text-lg text-slate-400 mb-8">
               There was an issue processing your payment.
             </p>
             <button
               onClick={() => navigate('/checkout')}
-              className="px-6 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700"
+              className="w-full px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors shadow-lg"
             >
               Try Again
             </button>

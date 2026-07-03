@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+import { toast } from 'sonner';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -26,94 +27,96 @@ const Profile = () => {
       if (response.data.success) {
         updateUser(response.data.user);
         setEditing(false);
-        alert('Profile updated successfully!');
+        toast.success('Profile updated successfully!');
       }
     } catch (error) {
-      alert(error.response?.data?.message || 'Failed to update profile');
+      toast.error(error.response?.data?.message || 'Failed to update profile');
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="py-8 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-semibold text-gray-800 mb-6">My Profile</h1>
+    <div className="py-8 sm:py-12 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[60vh]">
+      <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-6 sm:mb-8">My Profile</h1>
 
-      <div className="bg-white p-6 rounded-lg shadow">
-        <div className="mb-6 border-b pb-4">
-          <div className="flex justify-between py-2">
-            <span className="font-medium text-gray-500">Email:</span>
-            <span className="font-medium text-gray-800">{user?.email}</span>
+      <div className="bg-slate-900/50 p-6 sm:p-10 rounded-3xl shadow-lg border border-slate-800">
+        <div className="mb-8 border-b border-slate-800 pb-6">
+          <div className="flex justify-between py-3 px-4 bg-slate-800/30 rounded-lg mb-2">
+            <span className="font-semibold text-slate-400">Email:</span>
+            <span className="font-bold text-white">{user?.email}</span>
           </div>
-          <div className="flex justify-between py-2">
-            <span className="font-medium text-gray-500">Account Type:</span>
-            <span className={`font-medium ${user?.isAdmin ? 'text-yellow-500' : 'text-green-600'}`}>
+          <div className="flex justify-between py-3 px-4 bg-slate-800/30 rounded-lg">
+            <span className="font-semibold text-slate-400">Account Type:</span>
+            <span className={`font-bold ${user?.isAdmin ? 'text-purple-400' : 'text-emerald-400'}`}>
               {user?.isAdmin ? 'Admin' : 'Customer'}
             </span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <h2 className="text-lg font-medium mb-4">Personal Information</h2>
+          <h2 className="text-xl font-bold text-white mb-6">Personal Information</h2>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              disabled={!editing}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
-            />
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1.5">Name</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                disabled={!editing}
+                className="block w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors text-white placeholder-slate-500 disabled:opacity-50 disabled:bg-slate-800/50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1.5">Phone</label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                disabled={!editing}
+                placeholder="Enter your phone number"
+                className="block w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors text-white placeholder-slate-500 disabled:opacity-50 disabled:bg-slate-800/50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1.5">Address</label>
+              <textarea
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                disabled={!editing}
+                placeholder="Enter your address"
+                rows="3"
+                className="block w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors text-white placeholder-slate-500 disabled:opacity-50 disabled:bg-slate-800/50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-1.5">Pincode</label>
+              <input
+                type="text"
+                name="pincode"
+                value={formData.pincode}
+                onChange={handleChange}
+                disabled={!editing}
+                placeholder="Enter your pincode"
+                className="block w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors text-white placeholder-slate-500 disabled:opacity-50 disabled:bg-slate-800/50"
+              />
+            </div>
           </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Phone</label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              disabled={!editing}
-              placeholder="Enter your phone number"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Address</label>
-            <textarea
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              disabled={!editing}
-              placeholder="Enter your address"
-              rows="3"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700">Pincode</label>
-            <input
-              type="text"
-              name="pincode"
-              value={formData.pincode}
-              onChange={handleChange}
-              disabled={!editing}
-              placeholder="Enter your pincode"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
-            />
-          </div>
-
-          <div className="flex gap-4 mt-6">
+          <div className="flex gap-4 mt-8 pt-6 border-t border-slate-800">
             {editing ? (
               <>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-500 disabled:opacity-50"
+                  className="flex-1 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors shadow-lg disabled:opacity-50"
                 >
                   {saving ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -128,7 +131,7 @@ const Profile = () => {
                       pincode: user?.pincode || ''
                     });
                   }}
-                  className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-300"
+                  className="flex-1 py-3 bg-slate-800 border border-slate-700 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors"
                 >
                   Cancel
                 </button>
@@ -137,7 +140,7 @@ const Profile = () => {
               <button
                 type="button"
                 onClick={() => setEditing(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500"
+                className="w-full py-4 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-colors shadow-lg"
               >
                 Edit Profile
               </button>

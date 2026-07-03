@@ -58,7 +58,7 @@ function AppRoutes() {
   }, [user, dispatch]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
+    <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100">
       <Navbar />
       <ScrollToTop />
       <main className="grow">
