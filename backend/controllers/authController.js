@@ -2,6 +2,7 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../utils/sendEmail');
+const { otpEmailTemplate } = require('../utils/sendEmail');
 
 const createAccessToken = (user) => {
   return jwt.sign(
@@ -86,15 +87,14 @@ const register = async (req, res) => {
     try {
       await sendEmail({
         email: user.email,
-        subject: 'StyleStore - Verify your email',
+        subject: 'StyleStore - Verify Your Email',
         message: `Your verification OTP is: ${otp}. It is valid for 10 minutes.`,
-        html: `<h2>Welcome to StyleStore!</h2><p>Your verification OTP is: <strong>${otp}</strong></p><p>It is valid for 10 minutes.</p>`
+        html: otpEmailTemplate(otp, 'verification', 10)
       });
     } catch (err) {
-      user.otp = undefined;
-      user.otpExpires = undefined;
-      await user.save();
-      return res.status(500).json({ success: false, message: 'Could not send email' });
+      console.error('Send verification email error:', err.message);
+      await User.findByIdAndDelete(user._id); // Clean up unverified user
+      return res.status(500).json({ success: false, message: 'Could not send verification email. Please check your email address and try again.' });
     }
 
     res.status(201).json({
@@ -174,9 +174,9 @@ const resendOTP = async (req, res) => {
 
     await sendEmail({
       email: user.email,
-      subject: 'StyleStore - Verify your email',
+      subject: 'StyleStore - Resend: Verify Your Email',
       message: `Your new verification OTP is: ${otp}. It is valid for 10 minutes.`,
-      html: `<h2>Welcome to StyleStore!</h2><p>Your new verification OTP is: <strong>${otp}</strong></p><p>It is valid for 10 minutes.</p>`
+      html: otpEmailTemplate(otp, 'verification', 10)
     });
 
     res.status(200).json({ success: true, message: 'OTP resent successfully' });
@@ -422,9 +422,9 @@ const forgotPassword = async (req, res) => {
 
     await sendEmail({
       email: user.email,
-      subject: 'StyleStore - Password Reset',
+      subject: 'StyleStore - Password Reset OTP',
       message: `Your password reset OTP is: ${otp}. It is valid for 15 minutes.`,
-      html: `<h2>Password Reset Request</h2><p>Your password reset OTP is: <strong>${otp}</strong></p><p>It is valid for 15 minutes.</p>`
+      html: otpEmailTemplate(otp, 'reset', 15)
     });
 
     res.status(200).json({ success: true, message: 'Password reset OTP sent to email' });
