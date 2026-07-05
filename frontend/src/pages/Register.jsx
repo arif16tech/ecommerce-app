@@ -6,12 +6,9 @@ import { toast } from 'sonner';
 
 const Register = () => {
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
-  const [otp, setOtp] = useState('');
-  const [step, setStep] = useState(1); 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState(false);
-  const { register, verifyEmail, resendOTP } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -26,48 +23,14 @@ const Register = () => {
     const result = await register(formData.name, formData.email, formData.password);
 
     if (result.success) {
-      toast.success(result.message || 'Registration successful! Check your email for OTP.');
-      setStep(2); 
+      toast.success('Account created successfully!');
+      navigate('/');
     } else {
       setError(result.message);
       toast.error(result.message || 'Registration failed');
     }
 
     setLoading(false);
-  };
-
-  const handleVerify = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    const result = await verifyEmail(formData.email, otp);
-
-    if (result.success) {
-      toast.success('Email verified successfully!');
-      navigate('/');
-    } else {
-      setError(result.message);
-      toast.error(result.message || 'Verification failed');
-    }
-
-    setLoading(false);
-  };
-
-  const handleResendOTP = async () => {
-    setResending(true);
-    setError('');
-    
-    const result = await resendOTP(formData.email);
-    
-    if (result.success) {
-      toast.success('A new OTP has been sent to your email.');
-    } else {
-      setError(result.message);
-      toast.error(result.message || 'Failed to resend OTP');
-    }
-    
-    setResending(false);
   };
 
   const handleGoogleLogin = () => {
@@ -100,9 +63,7 @@ const Register = () => {
           </motion.div>
         )}
 
-        {step === 1 ? (
-          <>
-            <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-semibold text-slate-300 mb-1.5">Full Name</label>
             <input
@@ -148,7 +109,7 @@ const Register = () => {
             disabled={loading}
             className="w-full bg-white text-slate-900 py-3.5 rounded-xl hover:bg-slate-200 disabled:opacity-50 font-bold shadow-lg transition-all active:scale-[0.98] mt-2"
           >
-            {loading ? 'Creating Account...' : 'Register'}
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
@@ -183,48 +144,6 @@ const Register = () => {
             Log in
           </Link>
         </p>
-        </>
-        ) : (
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-5"
-          >
-            <p className="text-sm text-slate-400 mb-4 text-center">
-              We've sent a 6-digit verification code to <strong className="text-white">{formData.email}</strong>
-            </p>
-            <form onSubmit={handleVerify} className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-1.5">Verification Code</label>
-                <input
-                  type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  required
-                  maxLength="6"
-                  className="block w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors text-white placeholder-slate-500 text-center tracking-widest text-2xl font-mono"
-                  placeholder="------"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading || otp.length < 6}
-                className="w-full bg-white text-slate-900 py-3.5 rounded-xl hover:bg-slate-200 disabled:opacity-50 font-bold shadow-lg transition-all active:scale-[0.98] mt-2"
-              >
-                {loading ? 'Verifying...' : 'Verify Email'}
-              </button>
-            </form>
-            <div className="text-center mt-6">
-              <button 
-                onClick={handleResendOTP}
-                disabled={resending}
-                className="text-sm text-slate-300 hover:text-white font-semibold disabled:opacity-50 transition-colors underline underline-offset-4"
-              >
-                {resending ? 'Sending...' : "Didn't receive code? Resend OTP"}
-              </button>
-            </div>
-          </motion.div>
-        )}
       </motion.div>
     </div>
   );

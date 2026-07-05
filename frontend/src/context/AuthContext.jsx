@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
 
 
 
-  // Login function (cookie set by backend)
+  // Login function
   const login = async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
@@ -37,9 +37,6 @@ export const AuthProvider = ({ children }) => {
         return { success: true };
       }
     } catch (error) {
-      if (error.response?.data?.requiresVerification) {
-        return { success: false, requiresVerification: true, message: error.response.data.message };
-      }
       return { 
         success: false, 
         message: error.response?.data?.message || 'Login failed' 
@@ -47,12 +44,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Register function (cookie set by backend)
+  // Register function — logs user in directly
   const register = async (name, email, password) => {
     try {
       const response = await api.post('/auth/register', { name, email, password });
       if (response.data.success) {
-        // Don't set user here, just return success to trigger OTP flow
+        setUser(response.data.user);
         return { success: true, message: response.data.message };
       }
     } catch (error) {
@@ -60,29 +57,6 @@ export const AuthProvider = ({ children }) => {
         success: false, 
         message: error.response?.data?.message || 'Registration failed' 
       };
-    }
-  };
-
-  // Verify Email (OTP)
-  const verifyEmail = async (email, otp) => {
-    try {
-      const response = await api.post('/auth/verify-email', { email, otp });
-      if (response.data.success) {
-        setUser(response.data.user);
-        return { success: true };
-      }
-    } catch (error) {
-      return { success: false, message: error.response?.data?.message || 'Verification failed' };
-    }
-  };
-
-  // Resend OTP
-  const resendOTP = async (email) => {
-    try {
-      const response = await api.post('/auth/resend-otp', { email });
-      return { success: response.data.success, message: response.data.message };
-    } catch (error) {
-      return { success: false, message: error.response?.data?.message || 'Failed to resend OTP' };
     }
   };
 
@@ -133,8 +107,6 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateUser,
     checkAuthStatus,
-    verifyEmail,
-    resendOTP,
     forgotPassword,
     resetPassword
   };

@@ -77,7 +77,8 @@ const createCheckoutSession = async (req, res) => {
       publishableKey: process.env.STRIPE_PUBLISHABLE_KEY
     });
 
-  } catch {
+  } catch (error) {
+    console.error('Create checkout session error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Checkout session creation failed'
@@ -153,6 +154,11 @@ const verifySession = async (req, res) => {
       totalAmount += product.price * item.quantity;
     }
 
+    // Fetch user first (needed for order creation and profile update)
+    const user = await User.findById(userId);
+    if (!user)
+      return res.status(404).json({ success: false, message: 'User not found' });
+
     // Create order
     const order = await Order.create({
       userId: user._id,
@@ -176,8 +182,7 @@ const verifySession = async (req, res) => {
       orderStatus: 'Pending'
     });
 
-    // Save shipping to user profile
-    const user = await User.findById(userId);
+    // Save shipping to user profile if not already set
     if (!user.address || !user.phone) {
       user.name = shippingName || user.name;
       user.phone = shippingPhone;
@@ -196,7 +201,8 @@ const verifySession = async (req, res) => {
       order
     });
 
-  } catch {
+  } catch (error) {
+    console.error('Verify session error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Payment verification failed'

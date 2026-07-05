@@ -28,12 +28,8 @@ const Login = () => {
       toast.success('Login successful!');
       navigate('/');
     } else {
-      if (result.requiresVerification) {
-         toast.error(result.message);
-      } else {
-         setError(result.message);
-         toast.error(result.message || 'Login failed');
-      }
+      setError(result.message);
+      toast.error(result.message || 'Login failed');
     }
 
     setLoading(false);

@@ -24,8 +24,6 @@ const {
   getProfile,
   checkAuth,
   updateProfile,
-  verifyEmail,
-  resendOTP,
   forgotPassword,
   resetPassword,
   googleAuthCallback,
@@ -37,8 +35,6 @@ const { authMiddleware } = require('../middleware/auth');
 
 // Public routes
 router.post('/register', authLimiter, validate(registerSchema), register);
-router.post('/verify-email', verifyEmail);
-router.post('/resend-otp', otpLimiter, resendOTP);
 router.post('/login', authLimiter, validate(loginSchema), login);
 router.get('/check', checkAuth);
 router.post('/refresh-token', refreshTokenHandler);

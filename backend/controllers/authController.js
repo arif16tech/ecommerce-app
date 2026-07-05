@@ -52,7 +52,7 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
 };
 
-// crrate user
+// Register user (basic email + password, no OTP)
 const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -64,83 +64,24 @@ const register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Password must be 6+ chars' });
 
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      if (!existingUser.isVerified) {
-        return res.status(400).json({ success: false, message: 'User exists but not verified. Please verify your email.' });
-      }
-      return res.status(400).json({ success: false, message: 'User already exists' });
-    }
-
-    const otp = generateOTP();
-    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
-    const otpExpires = Date.now() + 10 * 60 * 1000; // 10 mins
+    if (existingUser)
+      return res.status(400).json({ success: false, message: 'User already exists with this email' });
 
     const user = await User.create({ 
       name, 
       email, 
       password,
-      isVerified: false,
-      otp: otpHash,
-      otpExpires
+      isVerified: true // Auto-verified, no OTP needed
     });
-
-    try {
-      await sendEmail({
-        email: user.email,
-        subject: 'StyleStore - Verify Your Email',
-        message: `Your verification OTP is: ${otp}. It is valid for 10 minutes.`,
-        html: otpEmailTemplate(otp, 'verification', 10)
-      });
-    } catch (err) {
-      console.error('Send verification email error:', err.message);
-      await User.findByIdAndDelete(user._id); // Clean up unverified user
-      return res.status(500).json({ success: false, message: 'Could not send verification email. Please check your email address and try again.' });
-    }
-
-    res.status(201).json({
-      success: true,
-      message: 'Registration successful. Please check your email for the OTP.'
-    });
-
-  } catch (error) {
-    console.error('Register Error:', error);
-    res.status(500).json({ success: false, message: 'Registration failed' });
-  }
-};
-
-// Verify Email OTP
-const verifyEmail = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-
-    if (!email || !otp)
-      return res.status(400).json({ success: false, message: 'Email and OTP required' });
-
-    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
-
-    const user = await User.findOne({ 
-      email,
-      otp: otpHash,
-      otpExpires: { $gt: Date.now() }
-    });
-
-    if (!user) {
-      return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
-    }
-
-    user.isVerified = true;
-    user.otp = undefined;
-    user.otpExpires = undefined;
 
     const accessToken = createAccessToken(user);
     const refreshToken = createRefreshToken(user);
     await storeRefreshToken(user, refreshToken);
-
     sendAuthCookies(res, accessToken, refreshToken);
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
-      message: 'Email verified successfully',
+      message: 'Account created successfully!',
       user: {
         id: user._id,
         name: user.name,
@@ -150,39 +91,8 @@ const verifyEmail = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Verify Email Error:', error);
-    res.status(500).json({ success: false, message: 'Verification failed' });
-  }
-};
-
-// Resend OTP
-const resendOTP = async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ success: false, message: 'Email required' });
-
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-    if (user.isVerified) return res.status(400).json({ success: false, message: 'User already verified' });
-
-    const otp = generateOTP();
-    const otpHash = crypto.createHash('sha256').update(otp).digest('hex');
-    
-    user.otp = otpHash;
-    user.otpExpires = Date.now() + 10 * 60 * 1000;
-    await user.save();
-
-    await sendEmail({
-      email: user.email,
-      subject: 'StyleStore - Resend: Verify Your Email',
-      message: `Your new verification OTP is: ${otp}. It is valid for 10 minutes.`,
-      html: otpEmailTemplate(otp, 'verification', 10)
-    });
-
-    res.status(200).json({ success: true, message: 'OTP resent successfully' });
-  } catch (error) {
-    console.error('Resend OTP Error:', error);
-    res.status(500).json({ success: false, message: 'Failed to resend OTP' });
+    console.error('Register Error:', error);
+    res.status(500).json({ success: false, message: 'Registration failed' });
   }
 };
 
@@ -476,8 +386,6 @@ module.exports = {
   getProfile,
   checkAuth,
   updateProfile,
-  verifyEmail,
-  resendOTP,
   forgotPassword,
   resetPassword,
   googleAuthCallback,
